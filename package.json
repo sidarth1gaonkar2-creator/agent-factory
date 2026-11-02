@@ -1,0 +1,19 @@
+{
+  "name": "agent-factory",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Builds a client's AI receptionist (Cloudflare Worker + Vapi tools, assistant and phone number) from one config file.",
+  "type": "module",
+  "bin": { "factory": "bin/factory.js" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "factory": "node bin/factory.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.40.0"
+  }
+}

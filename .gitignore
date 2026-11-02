@@ -1,0 +1,9 @@
+node_modules/
+.env
+# Raw exports from the live canonical build. They contain the canonical
+# tool secret and must never be committed.
+canonical-raw/
+# Per-client build output: rendered code, created IDs and the generated
+# tool secret.
+builds/
+*.key.json
