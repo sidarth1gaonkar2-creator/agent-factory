@@ -1,0 +1,14 @@
+{
+  "type": "function",
+  "function": {
+    "name": "{{TOOL_PREFIX}}bookAppointment",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "startTime": { "type": "string", "description": "YYYY-MM-DDTHH:MM, 24-hour {{SPOKEN_TZ}}." },
+        "isNewPatient": { "type": "boolean", "description": "True if they have not been to {{CLIENT_NAME}} before." }
+      }
+    }
+  },
+  "server": { "url": "{{WORKER_URL}}/bookAppointment", "secret": "{{VAPI_TOOL_SECRET}}" }
+}

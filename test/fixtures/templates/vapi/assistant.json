@@ -1,0 +1,19 @@
+{
+  "name": "{{CLIENT_NAME}} — {{RECEPTIONIST}}",
+  "firstMessage": "Thanks for calling {{CLIENT_NAME}}! This is {{RECEPTIONIST}}. Are you calling to book an appointment, or did you have a question?",
+  "endCallPhrases": [],
+  "endCallFunctionEnabled": true,
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "temperature": 0.3,
+    "toolIds": [],
+    "knowledgeBase": { "provider": "google", "fileIds": ["{{KB_FILE_ID}}"] },
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are {{RECEPTIONIST}} at {{CLIENT_NAME}}. Today is {{ \"now\" | date: \"%A, %B %d, %Y\", \"{{CLIENT_TZ}}\" }}. Times are {{SPOKEN_TZ}}. Hours: {{CLIENT_HOURS}}. Price questions go to the {{CONSULT_SERVICE}}. The front desk handles {{FRONT_DESK_SERVICES}}."
+      }
+    ]
+  }
+}

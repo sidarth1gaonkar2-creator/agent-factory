@@ -1,0 +1,75 @@
+# Example client. `factory new <slug>` copies this file to
+# clients/<slug>/client.yaml; fill it from the Stage 0 research.
+# Paths (knowledgeBase) resolve relative to this file.
+
+name: Example Aesthetics
+# 2-16 lowercase letters/digits. Names the Worker (<slug>-demo), the KV
+# namespace (<slug>_bookings) and the tool prefix (<slug>_).
+slug: example
+website: https://example.com
+timezone: America/New_York
+spokenTimezone: Eastern
+areaCode: 617
+receptionist: Claire
+
+# Default hours, plus per-day overrides: "closed" or {open, close}.
+# The longest service has to fit inside every open day.
+hours:
+  open: "09:00"
+  close: "17:00"
+  days:
+    sat: { open: "10:00", close: "14:00" }
+    sun: closed
+# How the assistant says the hours ({{CLIENT_HOURS}}).
+hoursText: Monday to Friday 9 AM to 5 PM, Saturday 10 AM to 2 PM, closed Sunday
+
+# 1-12 bookable services. Every alias routes to exactly one service; put the
+# bare common word ("facial") on the service it should mean.
+services:
+  consultation:
+    label: Complimentary Consultation
+    minutes: 30
+    aliases: [consult, consultation, free consultation]
+  signature_facial:
+    label: Signature Facial
+    minutes: 60
+    aliases: [facial, classic facial]
+  hydrafacial:
+    label: HydraFacial
+    minutes: 60
+    aliases: [hydra facial, hydrafacial]
+  botox:
+    label: Botox
+    minutes: 30
+    aliases: [tox, neurotoxin, wrinkle relaxer]
+  filler:
+    label: Dermal Filler
+    minutes: 45
+    aliases: [fillers, lip filler]
+  chemical_peel:
+    label: Chemical Peel
+    minutes: 45
+    aliases: [peel]
+  microneedling:
+    label: Microneedling
+    minutes: 75
+    aliases: [micro needling, collagen induction]
+  laser_hair_removal:
+    label: Laser Hair Removal
+    minutes: 30
+    aliases: [laser, hair removal]
+# The service price questions are routed to ({{CONSULT_SERVICE}}).
+consultService: consultation
+# Not phone-booked; the assistant takes a name and number ({{FRONT_DESK_SERVICES}}).
+frontDesk: [lash extensions, waxing, retail products]
+
+# Google Calendar the bookings are mirrored to (public id, not a secret).
+calendarId: ""
+
+# buy: buy a local number in areaCode (build needs --yes, it costs money)
+# existing: use a number already on the Twilio account ({mode: existing, number: "+16175551234"})
+# none: no phone number (worker, tools and assistant only)
+phone:
+  mode: buy
+
+knowledgeBase: example-kb.md

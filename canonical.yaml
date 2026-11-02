@@ -1,0 +1,48 @@
+# The canonical build every client is generated from: the live Elevate demo.
+# Read by `factory pull-canonical` (templatize) and `factory build` (worker
+# fields, leakage check). Public identifiers only; no secrets in this file.
+#
+# Fill the empty ids once from the Vapi and Cloudflare dashboards, then run
+# `npm run factory -- pull-canonical`. When a bug is fixed, fix the canonical
+# first, re-pull, then rebuild clients.
+
+# Vapi assistant id of the Elevate receptionist (Vapi → Assistants → Elevate).
+assistantId: ""
+# Base URL of the elevate-demo Worker, e.g.
+# https://elevate-demo.sidarthgaonkar.workers.dev
+workerUrl: ""
+# Name prefix on Elevate's tools. Elevate predates prefixes, so probably "".
+toolPrefix: ""
+# Vapi file id of Elevate's knowledge base, if the assistant references it.
+knowledgeBaseFileId: ""
+
+# Elevate literals -> template tokens. Longest match wins and word boundaries
+# are respected, so "Elevate" never touches "elevated". After pulling, check
+# the printed counts: a literal with count 0 is misspelled here, and anything
+# Elevate-specific the swaps miss (hours text, consult service line,
+# front-desk line) is tokenized by hand in templates/vapi/assistant.json.
+replace:
+  Elevate: CLIENT_NAME
+  elevate-demo: WORKER_NAME
+  Claire: RECEPTIONIST
+  # Add Elevate's full business name if it is longer than "Elevate", and its
+  # timezone, e.g.:
+  # Elevate Medical Spa: CLIENT_NAME
+  # America/Chicago: CLIENT_TZ
+  # Central: SPOKEN_TZ
+  # "[ELEVATE DEMO]": EVENT_PREFIX
+
+# Names that must never appear in a client build. A client whose own name
+# contains one of these is exempt from that entry only.
+forbidden:
+  - Elevate
+  - Lumen
+  - Nashville Skin Society
+
+worker:
+  # Field names inside each SERVICES entry of the canonical Worker. Match them
+  # to the elevate-demo code when you paste it into templates/worker/index.js.
+  serviceFields:
+    label: name
+    minutes: duration
+    aliases: aliases

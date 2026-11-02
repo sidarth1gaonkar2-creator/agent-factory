@@ -4,7 +4,9 @@
 
 import { stripReadOnly } from './render.js';
 
-const SECRET_HEADER = /^x-vapi-secret$/i;
+// Keys whose string value is the tool secret: the x-vapi-secret header, or
+// `server.secret`, which Vapi sends as that header for function tools.
+const SECRET_HEADER = /^(x-vapi-secret|secret)$/i;
 
 function escapeRegExp(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -30,7 +32,8 @@ function mapStrings(value, fn, key = null) {
 }
 
 // Find the tool secret wherever Vapi stores it in a tool: as a header value
-// keyed x-vapi-secret, either directly or as a schema property's `value`.
+// keyed x-vapi-secret (directly or as a schema property's `value`), or as
+// `server.secret`.
 export function extractSecrets(tool) {
   const found = new Set();
   const walk = (v) => {

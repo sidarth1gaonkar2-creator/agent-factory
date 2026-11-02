@@ -1,0 +1,8 @@
+{
+  "type": "apiRequest",
+  "name": "{{TOOL_PREFIX}}getServices",
+  "method": "POST",
+  "url": "{{WORKER_URL}}/getServices",
+  "headers": { "type": "object", "properties": { "x-vapi-secret": { "type": "string", "value": "{{VAPI_TOOL_SECRET}}" } } },
+  "body": { "type": "object", "properties": {} }
+}

@@ -1,4 +1,4 @@
-# Handoff: agent-factory v0.1 (work in progress)
+# Handoff: agent-factory v0.1
 
 Goal (roadmap phase 1): build a client's AI receptionist from one `client.yaml`
 in under 30 minutes, with no dashboard clicking. Replaces the manual stages in
@@ -23,57 +23,36 @@ doc; the code enforces them instead of a person.
   secrets via stdin), `src/twilio.js` (search/buy local number, add to A2P
   messaging service).
 
-## Still to build
+## Done (second commit)
 
-1. `canonical.yaml` (committed, no secrets): `assistantId`, `workerUrl`,
-   `toolPrefix` (Elevate's, probably ""), `knowledgeBaseFileId`, `replace:` map
-   of Elevate literals to tokens (business name, receptionist name, timezone,
-   spoken timezone, worker name), `forbidden:` names that must never appear in
-   a client build (Elevate, Lumen, Nashville Skin Society, ...),
-   `worker.serviceFields` matching the canonical SERVICES shape.
-2. `bin/factory.js` CLI with commands:
-   - `pull-canonical`: GET assistant + each `model.toolIds` tool from Vapi,
-     save raw to `canonical-raw/` (gitignored, contains the secret), run
-     `templatize`, write `templates/vapi/assistant.json` and
-     `templates/vapi/tools/*.json`, print the replacement counts and any leaks.
-     Human reviews the diff once and hand-tokenizes what literal swaps miss
-     (hours text, consult service line, front-desk line, date table).
-   - `new <slug>`: copy `clients/example.yaml` to `clients/<slug>/client.yaml`
-     plus an empty `kb.md`.
-   - `build <client.yaml> [--dry-run] [--from <step>] [--yes]`, steps in order,
-     each recording created IDs in `builds/<slug>/state.json` so re-runs skip
-     finished steps:
-     1. phone: buy a local number in the area code (`--yes` required, it costs
-        money) or use the existing one; add to TWILIO_MESSAGING_SERVICE_SID.
-     2. worker: render `templates/worker/index.js` into
-        `builds/<slug>/src/index.js`, write wrangler.toml, ensure KV, deploy,
-        then put secrets: VAPI_TOOL_SECRET (generated with
-        crypto.randomUUID, saved only in `builds/<slug>/.secrets.json` mode
-        0600), GCP_SERVICE_ACCOUNT_KEY (from GCP_KEY_FILE), TWILIO_ACCOUNT_SID,
-        TWILIO_AUTH_TOKEN. Vars: GOOGLE_CALENDAR_ID, TWILIO_FROM_NUMBER,
-        TWILIO_MESSAGING_SERVICE_SID. Verify with `wrangler secret list`.
-     3. tools: render each tool template with WORKER_URL + VAPI_TOOL_SECRET,
-        create, read back by ID, check name/url/secret header.
-     4. kb: upload `knowledgeBase` file, keep its id as KB_FILE_ID.
-     5. assistant: render, set `model.toolIds` to the new IDs, assert
-        gpt-4o / temperature 0.3 set explicitly and endCallPhrases empty, run
-        the leakage check, create, read back and compare prompt + toolIds.
-     6. vapi-number: import the Twilio number to Vapi bound to the assistant,
-        Label = derived phoneLabel (empty label fails silently), read back.
-     `--dry-run` renders everything into `builds/<slug>/` with no API calls.
-   - `test <client.yaml>`: POST the Worker's getServices with the secret (200,
-     every service key present, no forbidden names), with a wrong secret
-     (must be rejected); then Vapi `POST /chat` scripted turns (services ask,
-     price question, leakage sweep) into `builds/<slug>/test-report.md`. The
-     rest of the 13-test suite stays manual for now.
-3. Unit tests in `test/` (node:test) for config validation, render,
-   templatize (secret stripping, word boundaries), workerConfigBlock.
-4. README: one-time setup (.env from .env.example, copy the elevate-demo
-   Worker code from the Cloudflare dashboard into `templates/worker/index.js`
-   and wrap its client constants in the markers, `npx wrangler login` or
-   CLOUDFLARE_API_TOKEN, run `pull-canonical`), then per client:
-   `new` -> fill yaml + kb -> `build --dry-run` -> `build` -> `test` -> live
-   call (Stage 5 stays human).
+- `canonical.yaml` with the replace / forbidden / serviceFields shape. The
+  Elevate ids (assistantId, workerUrl, knowledgeBaseFileId) are still empty:
+  fill them from the dashboards before `pull-canonical`.
+- `bin/factory.js`: `pull-canonical`, `new`, `build` (`--dry-run`, `--from`,
+  `--yes`, `--templates`) and `test`. Build logic lives in `src/build.js`
+  (steps, pre-flight, read-back checks, state.json), the smoke tests in
+  `src/smoke.js`, `.env` loading in `src/env.js`.
+- The live build runs a pre-flight (render everything with placeholders,
+  assistant standing-rule checks, leakage over Worker / tools / KB) before
+  anything is created or bought. A bought number is saved to state.json
+  immediately and never bought again, even with `--from phone`.
+- `templatize` also strips `server.secret` (function tools).
+- `clients/example.yaml` + `example-kb.md`, fixture templates in
+  `test/fixtures/templates/`, 51 node:test tests (fake Vapi / Twilio /
+  Wrangler for the full build), README.
+
+## Open items
+
+- One-time setup (README): `.env`, paste the elevate-demo Worker into
+  `templates/worker/index.js` with the markers, fill canonical.yaml ids,
+  `pull-canonical`, hand-tokenize, commit `templates/`.
+- Not yet exercised against the live APIs. First real run: check how Vapi
+  returns the tool secret on read (masked values only warn), the `/chat`
+  response shape, and Wrangler's deploy output (URL / version parsing).
+- `npm install` skipped the esbuild / workerd install scripts (npm
+  allowScripts). If `wrangler deploy` complains, run
+  `npm install-scripts approve esbuild workerd` and reinstall.
+- Rest of the 13-test suite is still manual.
 
 ## Rules that must hold
 
