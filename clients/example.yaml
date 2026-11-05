@@ -6,6 +6,8 @@ name: Example Aesthetics
 # 2-16 lowercase letters/digits. Names the Worker (<slug>-demo), the KV
 # namespace (<slug>_bookings) and the tool prefix (<slug>_).
 slug: example
+# Town and state, as said in the prompt ({{CLIENT_LOCATION}}).
+location: Boston, Massachusetts
 website: https://example.com
 timezone: America/New_York
 spokenTimezone: Eastern
@@ -20,8 +22,9 @@ hours:
   days:
     sat: { open: "10:00", close: "14:00" }
     sun: closed
-# How the assistant says the hours ({{CLIENT_HOURS}}).
-hoursText: Monday to Friday 9 AM to 5 PM, Saturday 10 AM to 2 PM, closed Sunday
+# How the assistant says the hours ({{CLIENT_HOURS}}). Optional: left out, it
+# is generated from hours, e.g. "Monday through Friday, 9 AM to 5 PM; Saturday,
+# 10 AM to 2 PM Eastern; closed Sunday".
 # Minimum notice for a same-day booking (default 60).
 leadMinutes: 60
 

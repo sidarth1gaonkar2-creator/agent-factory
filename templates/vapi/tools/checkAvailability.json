@@ -1,0 +1,57 @@
+{
+  "type": "apiRequest",
+  "function": {
+    "name": "api_request_tool",
+    "description": "Find open appointment start times on a given weekday for a specific service. Appointment lengths vary by service, so availability depends on which one. Call this before naming ANY time to the caller, including alternatives."
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "One moment while I check the schedule.",
+      "blocking": false
+    }
+  ],
+  "name": "{{TOOL_PREFIX}}checkAvailability",
+  "url": "{{WORKER_URL}}/checkAvailability",
+  "method": "POST",
+  "headers": {
+    "type": "object",
+    "properties": {
+      "x-vapi-secret": {
+        "type": "string",
+        "value": "{{VAPI_TOOL_SECRET}}"
+      }
+    }
+  },
+  "body": {
+    "type": "object",
+    "required": [
+      "date",
+      "service"
+    ],
+    "properties": {
+      "date": {
+        "description": "YYYY-MM-DD, {{SPOKEN_TZ}} time.",
+        "type": "string",
+        "default": ""
+      },
+      "service": {
+        "description": "Service name or key from getServices, e.g. {{CONSULT_SERVICE_KEY}}.",
+        "type": "string",
+        "default": ""
+      },
+      "expectedWeekday": {
+        "description": "The weekday you believe this date falls on, e.g. Wednesday. Always include it.",
+        "type": "string",
+        "default": ""
+      }
+    }
+  },
+  "variableExtractionPlan": {
+    "schema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  }
+}

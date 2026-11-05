@@ -478,7 +478,7 @@ const weekdayName = (date) => WEEKDAYS[utcDate(date).getUTCDay()];
 const dayHours = (date) => HOURS_BY_DAY[utcDate(date).getUTCDay()];
 const isOpenDay = (date) => dayHours(date) != null;
 
-// "Monday through Friday, 10 AM to 4 PM Central", built from HOURS_BY_DAY.
+// e.g. "Monday through Friday, 9 AM to 5 PM Eastern", built from HOURS_BY_DAY.
 function hoursSentence() {
   const groups = [];
   let prev = null;

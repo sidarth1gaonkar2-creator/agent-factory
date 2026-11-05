@@ -1,0 +1,79 @@
+{
+  "type": "apiRequest",
+  "function": {
+    "name": "api_request_tool",
+    "description": "Book a confirmed appointment. Do NOT call this tool until ALL of these are done, in order: (1) phone number read back digit-by-digit with a clear yes, (2) last name spelled by the caller and read back letter-by-letter with a yes, (3) the caller has been asked whether they want a text confirmation. Calling this tool before all three is a serious error."
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "One moment while I get that booked.",
+      "blocking": false
+    }
+  ],
+  "name": "{{TOOL_PREFIX}}bookAppointment",
+  "url": "{{WORKER_URL}}/bookAppointment",
+  "method": "POST",
+  "headers": {
+    "type": "object",
+    "properties": {
+      "x-vapi-secret": {
+        "type": "string",
+        "value": "{{VAPI_TOOL_SECRET}}"
+      }
+    }
+  },
+  "body": {
+    "type": "object",
+    "required": [
+      "name",
+      "phone",
+      "service",
+      "startTime",
+      "lastNameSpelling"
+    ],
+    "properties": {
+      "name": {
+        "description": "Full name.",
+        "type": "string",
+        "default": ""
+      },
+      "phone": {
+        "description": "Callback number, digits only.",
+        "type": "string",
+        "default": ""
+      },
+      "service": {
+        "description": "Service name.",
+        "type": "string",
+        "default": ""
+      },
+      "startTime": {
+        "description": "YYYY-MM-DDTHH:MM, 24-hour {{SPOKEN_TZ}}.",
+        "type": "string",
+        "default": ""
+      },
+      "smsConsent": {
+        "description": "True only if the caller clearly said yes to a text confirmation.",
+        "type": "boolean"
+      },
+      "isNewPatient": {
+        "description": "True if they have not been to {{CLIENT_NAME}} before.",
+        "type": "boolean",
+        "default": ""
+      },
+      "lastNameSpelling": {
+        "description": "The caller's last name exactly as they spelled it, letters only (e.g. GAONKAR). Must be collected and read back before booking.",
+        "type": "string",
+        "default": ""
+      }
+    }
+  },
+  "variableExtractionPlan": {
+    "schema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  }
+}

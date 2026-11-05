@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
-import { build, checkAssistant, checkTool, dryRun, forbiddenFor, loadTemplates, renderChecked } from '../src/build.js';
+import { build, checkAssistant, checkTool, dryRun, forbiddenFor, leftoversFor, loadTemplates, renderChecked } from '../src/build.js';
 import { loadEnv, missingEnv } from '../src/env.js';
 import { CANONICAL, client, FIXTURE_TEMPLATES } from './helpers.js';
 
@@ -267,4 +267,16 @@ test('an em dash in the prompt is a dry-run warning, not a failure', () => {
   const r = dryRun(clientWithKb(), { canonical: CANONICAL, templatesDir: tpl, buildsDir: join(tmp, 'b10'), env: {}, log: quiet });
   assert.ok(r.warnings.some((w) => /em dash in/.test(w)));
   assert.equal(r.written.includes('vapi/assistant.json'), true);
+});
+
+test('canonical leftovers fail a dry run unless they are the client own config', () => {
+  const canonical = { ...CANONICAL, canonicalLeftovers: ['Nashville', 'injectableConsult'] };
+  const tpl = join(tmp, 'tpl-left');
+  cpSync(FIXTURE_TEMPLATES, tpl, { recursive: true });
+  const file = join(tpl, 'vapi', 'assistant.json');
+  const a = JSON.parse(readFileSync(file, 'utf8'));
+  a.model.messages[0].content += ' We are in Nashville.';
+  writeFileSync(file, JSON.stringify(a));
+  assert.throws(() => dryRun(clientWithKb(), { canonical, templatesDir: tpl, buildsDir: join(tmp, 'b11'), env: {}, log: quiet }), /leakage: Nashville/);
+  assert.deepEqual(leftoversFor(client({ location: 'Nashville, Tennessee' }), canonical), ['injectableConsult']);
 });

@@ -90,3 +90,15 @@ test('the example client is valid', () => {
   assert.equal(c.slug, 'example');
   assert.equal(c.knowledgeBasePath, join(ROOT, 'clients', 'example-kb.md'));
 });
+
+test('hoursText is generated from the hours when not given', () => {
+  const c = client({ hoursText: undefined });
+  assert.equal(c.hoursText, 'Monday through Friday, 9 AM to 5 PM; Saturday, 10 AM to 2 PM Central; closed Sunday');
+  const weekdays = client({ hoursText: '', hours: { open: '10:00', close: '16:30', days: { sat: 'closed', sun: 'closed' } } });
+  assert.equal(weekdays.hoursText, 'Monday through Friday, 10 AM to 4:30 PM Central; closed Saturday and Sunday');
+  assert.equal(client().hoursText, 'Monday to Friday 9 to 5');
+});
+
+test('location is required', () => {
+  assert.throws(() => client({ location: '' }), /missing "location"/);
+});

@@ -1,0 +1,57 @@
+{
+  "type": "apiRequest",
+  "function": {
+    "name": "api_request_tool",
+    "description": "Call this the moment a caller reports pain, swelling, redness, heat, discoloration, a lump, vision changes, or difficulty breathing after any treatment. Vision changes or breathing trouble are emergencies. Do not assess severity yourself -- call this tool and read back exactly what it returns."
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "",
+      "blocking": false
+    }
+  ],
+  "name": "{{TOOL_PREFIX}}urgentCallback",
+  "url": "{{WORKER_URL}}/urgentCallback",
+  "method": "POST",
+  "headers": {
+    "type": "object",
+    "properties": {
+      "x-vapi-secret": {
+        "type": "string",
+        "value": "{{VAPI_TOOL_SECRET}}"
+      }
+    }
+  },
+  "body": {
+    "type": "object",
+    "required": [
+      "name",
+      "phone"
+    ],
+    "properties": {
+      "name": {
+        "description": "Caller's full name.",
+        "type": "string",
+        "default": ""
+      },
+      "phone": {
+        "description": "Best callback number for the provider to reach the caller.",
+        "type": "string",
+        "default": ""
+      },
+      "description": {
+        "description": "What the caller reported (symptom, treatment, timing). Not required.",
+        "type": "string",
+        "default": ""
+      }
+    }
+  },
+  "variableExtractionPlan": {
+    "schema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  }
+}

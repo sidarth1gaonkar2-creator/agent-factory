@@ -10,6 +10,7 @@ export function rawClient(over = {}) {
   return {
     name: 'Test Spa',
     slug: 'tspa',
+    location: 'Austin, Texas',
     timezone: 'America/Chicago',
     spokenTimezone: 'Central',
     hours: { open: '09:00', close: '17:00', days: { sun: 'closed', sat: { open: '10:00', close: '14:00' } } },

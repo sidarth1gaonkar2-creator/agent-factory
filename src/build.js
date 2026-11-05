@@ -52,13 +52,21 @@ export function forbiddenFor(client, canonical) {
   return (canonical.forbidden ?? []).filter((f) => f && !own.includes(String(f).toLowerCase()));
 }
 
+// Canonical text that must not survive into another client's build (the
+// canonical's town, hours, service keys...). An entry that is part of this
+// client's own config is exempt, so the Elevate parity build still passes.
+export function leftoversFor(client, canonical) {
+  const own = JSON.stringify(client).toLowerCase();
+  return (canonical.canonicalLeftovers ?? []).filter((x) => x && !own.includes(String(x).toLowerCase()));
+}
+
 // Render a template, refusing tokens whose value is empty: a prompt saying
 // "our hours are ." is as broken as one saying "{{CLIENT_HOURS}}".
 export function renderChecked(value, tokens, what) {
   const text = typeof value === 'string' ? value : JSON.stringify(value);
   const empty = tokensUsed(text).filter((t) => t in tokens && (tokens[t] === '' || tokens[t] == null));
   if (empty.length) {
-    throw new Error(`${what} uses ${empty.map((t) => `{{${t}}}`).join(', ')} but the client config leaves it empty (hoursText, consultService, frontDesk, website?)`);
+    throw new Error(`${what} uses ${empty.map((t) => `{{${t}}}`).join(', ')} but the client config leaves it empty (consultService, frontDesk, website?)`);
   }
   return typeof value === 'string' ? renderString(value, tokens) : renderDeep(value, tokens);
 }
@@ -163,7 +171,8 @@ function workerVars(client, state, env) {
 export function dryRun(client, { canonical, templatesDir, buildsDir, env = process.env, log = console.log }) {
   const dir = join(buildsDir, client.slug, 'dry-run');
   const tpl = loadTemplates(templatesDir);
-  const forbidden = forbiddenFor(client, canonical);
+  // Other clients' names and canonical leftovers fail the same way.
+  const forbidden = [...forbiddenFor(client, canonical), ...leftoversFor(client, canonical)];
   const warnings = tpl.missing.map((m) => `templates/${m} is missing; run the one-time setup in README (it is skipped in this dry run)`);
   const values = {
     workerUrl: workerUrlGuess(client, env) ?? `https://${client.derived.workerName}.WORKERS_SUBDOMAIN.workers.dev`,
@@ -228,7 +237,7 @@ export async function build(client, { canonical, templatesDir, buildsDir, env = 
   if (tpl.missing.length) throw new Error(`missing templates: ${tpl.missing.join(', ')}; finish the one-time setup in README first`);
   const kb = existsSync(client.knowledgeBasePath) ? readFileSync(client.knowledgeBasePath, 'utf8') : '';
   if (!kb.trim()) throw new Error(`knowledge base ${client.knowledgeBasePath} is missing or empty`);
-  const forbidden = forbiddenFor(client, canonical);
+  const forbidden = [...forbiddenFor(client, canonical), ...leftoversFor(client, canonical)];
 
   // The Worker sends SMS through the messaging service, so it is required.
   const needEnv = ['VAPI_API_KEY', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_MESSAGING_SERVICE_SID', 'GCP_KEY_FILE'];

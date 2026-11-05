@@ -25,7 +25,7 @@ export function normalizeClient(raw, baseDir = '.') {
   const need = (key) => {
     if (raw[key] === undefined || raw[key] === null || raw[key] === '') errors.push(`missing "${key}"`);
   };
-  ['name', 'slug', 'timezone', 'spokenTimezone', 'hours', 'areaCode', 'receptionist', 'services', 'knowledgeBase'].forEach(need);
+  ['name', 'slug', 'location', 'timezone', 'spokenTimezone', 'hours', 'areaCode', 'receptionist', 'services', 'knowledgeBase'].forEach(need);
   if (errors.length) throw new Error(`client config invalid:\n  ${errors.join('\n  ')}`);
 
   if (!/^[a-z][a-z0-9]{1,15}$/.test(raw.slug)) errors.push('slug must be 2-16 lowercase letters/digits, starting with a letter');
@@ -96,6 +96,7 @@ export function normalizeClient(raw, baseDir = '.') {
     areaCode: String(raw.areaCode),
     frontDesk: raw.frontDesk ?? [],
     consultService: raw.consultService ?? null,
+    hoursText: raw.hoursText || hoursSentence(hoursByDay, raw.spokenTimezone),
     leadMinutes,
     calendarId: raw.calendarId ?? '',
     phone,
@@ -110,6 +111,40 @@ export function normalizeClient(raw, baseDir = '.') {
       phoneLabel: `${raw.name} ${raw.workerSuffix === 'live' ? 'Line' : 'Demo'} ${raw.areaCode}`,
     },
   };
+}
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function spokenTime(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const h12 = h % 12 || 12;
+  return `${h12}${m ? ':' + String(m).padStart(2, '0') : ''} ${h >= 12 && h < 24 ? 'PM' : 'AM'}`;
+}
+
+export function andList(items) {
+  return items.length <= 2 ? items.join(' and ') : `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`;
+}
+
+// "Monday through Friday, 10 AM to 4 PM Central; closed Saturday and Sunday",
+// from the per-day hours. Used when client.yaml has no hoursText.
+export function hoursSentence(byDay, spokenTimezone) {
+  const groups = [];
+  const closed = [];
+  let prev = null;
+  for (const d of [1, 2, 3, 4, 5, 6, 0]) {
+    const h = byDay[d];
+    const last = groups.at(-1);
+    if (!h) closed.push(DAY_NAMES[d]);
+    else if (last && prev === last.end && last.h[0] === h[0] && last.h[1] === h[1]) last.end = d;
+    else groups.push({ start: d, end: d, h });
+    prev = h ? d : null;
+  }
+  const open = groups.map((g) => {
+    const days = g.start === g.end ? DAY_NAMES[g.start] : `${DAY_NAMES[g.start]} through ${DAY_NAMES[g.end]}`;
+    return `${days}, ${spokenTime(g.h[0])} to ${spokenTime(g.h[1])}`;
+  });
+  return `${open.join('; ')} ${spokenTimezone}${closed.length ? `; closed ${andList(closed)}` : ''}`;
 }
 
 export { DAYS };

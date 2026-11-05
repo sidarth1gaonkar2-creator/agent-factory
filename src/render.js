@@ -1,6 +1,8 @@
 // Turning canonical templates into one client's files. Everything here is
 // pure (no network, no disk) so it can be unit tested and dry-run.
 
+import { andList } from './config.js';
+
 const TOKEN = /\{\{([A-Z0-9_]+)\}\}/g;
 
 // The tokens a template may use. Built from the client config plus values
@@ -12,7 +14,8 @@ export function tokensFor(client, extra = {}) {
     CLIENT_WEBSITE: client.website ?? '',
     CLIENT_TZ: client.timezone,
     SPOKEN_TZ: client.spokenTimezone,
-    CLIENT_HOURS: client.hoursText ?? '',
+    CLIENT_LOCATION: client.location,
+    CLIENT_HOURS: client.hoursText,
     AREA_CODE: client.areaCode,
     RECEPTIONIST: client.receptionist,
     TOOL_PREFIX: client.derived.toolPrefix,
@@ -20,7 +23,7 @@ export function tokensFor(client, extra = {}) {
     EVENT_PREFIX: client.derived.eventPrefix,
     CONSULT_SERVICE: client.consultService ? client.services[client.consultService].label : '',
     CONSULT_SERVICE_KEY: client.consultService ?? '',
-    FRONT_DESK_SERVICES: client.frontDesk.join(', '),
+    FRONT_DESK_SERVICES: andList(client.frontDesk),
     ...extra,
   };
 }

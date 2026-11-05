@@ -4,6 +4,7 @@
 
 name: Elevate Medical Spa
 slug: elevate
+location: Nashville, Tennessee
 website: https://example.com
 timezone: America/Chicago
 spokenTimezone: Central
@@ -16,7 +17,8 @@ hours:
   days:
     sat: closed
     sun: closed
-hoursText: Monday through Friday, 10 AM to 4 PM Central
+# Live prompt wording.
+hoursText: Monday through Friday, 10 AM to 4 PM Central. Closed weekends
 # The live Worker only skips start times that have already passed today.
 leadMinutes: 0
 

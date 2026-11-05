@@ -1,0 +1,33 @@
+{
+  "type": "apiRequest",
+  "function": {
+    "name": "api_request_tool",
+    "description": "Get the list of services {{CLIENT_NAME}} offers and how long each takes. Call this when the caller asks what's offered, or when you're unsure which service they mean."
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "One moment.",
+      "blocking": false
+    }
+  ],
+  "name": "{{TOOL_PREFIX}}getServices",
+  "url": "{{WORKER_URL}}/getServices",
+  "method": "POST",
+  "headers": {
+    "type": "object",
+    "properties": {
+      "x-vapi-secret": {
+        "type": "string",
+        "value": "{{VAPI_TOOL_SECRET}}"
+      }
+    }
+  },
+  "variableExtractionPlan": {
+    "schema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  }
+}

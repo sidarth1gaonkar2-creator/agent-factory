@@ -44,6 +44,16 @@ forbidden:
   - Nashville Skin Society
   - Toxxology
 
+# Canonical-specific text that must not survive into a client build: the
+# leakage check fails on any of these unless it is part of the client's own
+# config. Add to it whenever a hand-tokenizing pass finds a new one.
+canonicalLeftovers:
+  - Nashville
+  - Tennessee
+  - injectableConsult
+  - Lash and brow
+  - 10 AM to 4 PM
+
 worker:
   # Field names inside each SERVICES entry of templates/worker/index.js
   # (elevate-demo uses label / minutes / aliases).
