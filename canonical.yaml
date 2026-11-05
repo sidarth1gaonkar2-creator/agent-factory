@@ -22,12 +22,11 @@ knowledgeBaseFileId: ""
 # Elevate-specific the swaps miss (hours text, consult service line,
 # front-desk line) is tokenized by hand in templates/vapi/assistant.json.
 replace:
+  Elevate Medical Spa: CLIENT_NAME
   Elevate: CLIENT_NAME
   elevate-demo: WORKER_NAME
   Claire: RECEPTIONIST
-  # Add Elevate's full business name if it is longer than "Elevate", and its
-  # timezone, e.g.:
-  # Elevate Medical Spa: CLIENT_NAME
+  # Add Elevate's timezone once confirmed, e.g.:
   # America/Chicago: CLIENT_TZ
   # Central: SPOKEN_TZ
   # "[ELEVATE DEMO]": EVENT_PREFIX
