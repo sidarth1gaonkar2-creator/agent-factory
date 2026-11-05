@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { findLeaks, renderDeep, renderString, renderWorker, stripReadOnly, tokensFor, tokensUsed, workerConfigBlock } from '../src/render.js';
+import { findLeaks, nonAsciiPunctuation, renderDeep, renderString, renderWorker, stripReadOnly, tokensFor, tokensUsed, workerConfigBlock } from '../src/render.js';
 import { client } from './helpers.js';
 
 test('tokensFor maps the client config', () => {
@@ -64,4 +64,12 @@ test('stripReadOnly removes Vapi-managed fields without touching the input', () 
   const src = { id: '1', orgId: 'o', createdAt: 'c', updatedAt: 'u', isServerUrlSecretSet: true, name: 'n' };
   assert.deepEqual(stripReadOnly(src), { name: 'n' });
   assert.equal(src.id, '1');
+});
+
+test('nonAsciiPunctuation names each typographic character with context', () => {
+  const found = nonAsciiPunctuation('Keep short sentences — this is a live call. It’s fine...');
+  assert.equal(found.length, 2);
+  assert.match(found[0], /^em dash in ".*sentences — this is/);
+  assert.match(found[1], /^curly quote/);
+  assert.deepEqual(nonAsciiPunctuation('plain -- ascii "quotes"'), []);
 });

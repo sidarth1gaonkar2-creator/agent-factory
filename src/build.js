@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path';
 import YAML from 'yaml';
 import { wranglerToml } from './cloudflare.js';
 import { missingEnv } from './env.js';
-import { findLeaks, renderDeep, renderString, renderWorker, tokensFor, tokensUsed } from './render.js';
+import { findLeaks, nonAsciiPunctuation, renderDeep, renderString, renderWorker, tokensFor, tokensUsed } from './render.js';
 import { extractSecrets } from './templatize.js';
 
 export const STEPS = ['phone', 'worker', 'tools', 'kb', 'assistant', 'vapi-number'];
@@ -73,6 +73,11 @@ export function toolUrl(tool) {
 
 export function systemPrompt(assistant) {
   return (assistant.model?.messages ?? []).find((m) => m.role === 'system')?.content ?? '';
+}
+
+// Non-ASCII punctuation in what the assistant says. A warning, not a failure.
+export function spokenPunctuation(assistant) {
+  return nonAsciiPunctuation(`${assistant.firstMessage ?? ''}\n${systemPrompt(assistant)}`);
 }
 
 // Standing rules for the assistant, checked before it is created.
@@ -191,6 +196,7 @@ export function dryRun(client, { canonical, templatesDir, buildsDir, env = proce
     const problems = checkAssistant(r.assistant, client, forbidden);
     if (problems.length) throw new Error(`assistant fails the standing rules:\n  ${problems.join('\n  ')}`);
     put('vapi/assistant.json', JSON.stringify(r.assistant, null, 2) + '\n');
+    warnings.push(...spokenPunctuation(r.assistant).map((p) => `assistant prompt has non-ASCII punctuation: ${p}`));
   }
   const kb = existsSync(client.knowledgeBasePath) ? readFileSync(client.knowledgeBasePath, 'utf8') : '';
   if (!kb.trim()) warnings.push(`knowledge base ${client.knowledgeBasePath} is missing or empty; the live build will refuse it`);
@@ -257,6 +263,7 @@ export async function build(client, { canonical, templatesDir, buildsDir, env = 
     if (leaks.length) preProblems.push(`leakage: ${leaks.join(', ')}`);
   }
   if (preProblems.length) throw new Error(`pre-flight failed, nothing was created:\n  ${preProblems.join('\n  ')}`);
+  spokenPunctuation(pre.assistant).forEach((p) => log(`WARN assistant prompt has non-ASCII punctuation: ${p}`));
 
   const secrets = loadJson(secretsPath, {});
   if (!secrets.VAPI_TOOL_SECRET) {

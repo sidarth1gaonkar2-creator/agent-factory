@@ -32,6 +32,10 @@ replace:
   # Add once seen in the Worker code:
   # "[ELEVATE DEMO]": EVENT_PREFIX
 
+# Never modify the Lumen demo line: assistant "Lumen Aesthetics — Claire"
+# (789ff48e-4298-4b76-bc61-2a5a28f8475c) on +1 615 552 0990 uses its own
+# four tools, separate from Elevate's. Reading it is fine.
+
 # Names that must never appear in a client build. A client whose own name
 # contains one of these is exempt from that entry only.
 forbidden:

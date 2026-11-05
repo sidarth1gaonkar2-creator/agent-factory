@@ -6,7 +6,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import YAML from 'yaml';
-import { STEPS, build, dryRun, forbiddenFor, loadCanonical, loadJson } from '../src/build.js';
+import { STEPS, build, dryRun, forbiddenFor, loadCanonical, loadJson, spokenPunctuation } from '../src/build.js';
 import * as cf from '../src/cloudflare.js';
 import { loadClient } from '../src/config.js';
 import { loadEnv, missingEnv } from '../src/env.js';
@@ -68,6 +68,11 @@ async function pullCanonical() {
   for (const [from, token] of Object.entries(canonical.replace ?? {})) console.log(`  ${from} -> {{${token}}}: ${out.report.counts[token] ?? 0}`);
   for (const token of ['WORKER_URL', 'KB_FILE_ID']) if (out.report.counts[token]) console.log(`  {{${token}}}: ${out.report.counts[token]}`);
   console.log(`Tool secrets replaced with {{VAPI_TOOL_SECRET}}: ${out.report.secretsReplaced}`);
+  const punct = spokenPunctuation(out.assistant);
+  if (punct.length) {
+    console.log('\nNon-ASCII punctuation in the canonical prompt (fix it in Vapi, then re-pull):');
+    punct.forEach((p) => console.log(`  ${p}`));
+  }
   if (out.report.leaks.length) {
     console.log(`\nStill Elevate-specific (tokenize by hand, then git diff): ${out.report.leaks.join(', ')}`);
   }

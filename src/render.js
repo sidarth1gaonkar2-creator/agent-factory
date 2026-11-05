@@ -61,6 +61,27 @@ export function findLeaks(text, forbidden) {
   return forbidden.filter((f) => f && lower.includes(String(f).toLowerCase()));
 }
 
+// Typographic punctuation in spoken text (prompt, first message). Reported
+// rather than rejected: fix it in the canonical prompt, then re-pull.
+const PUNCT_NAMES = {
+  '–': 'en dash',
+  '—': 'em dash',
+  '‘': 'curly quote',
+  '’': 'curly quote',
+  '“': 'curly quote',
+  '”': 'curly quote',
+  '…': 'ellipsis',
+  ' ': 'non-breaking space',
+};
+const PUNCT = new RegExp(`[${Object.keys(PUNCT_NAMES).join('')}]`, 'g');
+
+export function nonAsciiPunctuation(text) {
+  return [...String(text).matchAll(PUNCT)].map((m) => {
+    const context = text.slice(Math.max(0, m.index - 25), m.index + 26).replace(/\s+/g, ' ');
+    return `${PUNCT_NAMES[m[0]]} in "...${context}..."`;
+  });
+}
+
 const MARK_START = '// @factory:client-config:start';
 const MARK_END = '// @factory:client-config:end';
 

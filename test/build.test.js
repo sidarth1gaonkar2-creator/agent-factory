@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
@@ -255,4 +255,16 @@ test('existing phone mode uses the owned number', async () => {
   const state = await build(c, { canonical: CANONICAL, templatesDir: FIXTURE_TEMPLATES, buildsDir: join(tmp, 'b9'), env: env(), deps: f.deps, log: quiet });
   assert.deepEqual([state.steps.phone.number, state.steps.phone.sid], ['+16155559999', 'PN2']);
   assert.ok(!f.calls.some((x) => x[0] === 'buy'));
+});
+
+test('an em dash in the prompt is a dry-run warning, not a failure', () => {
+  const tpl = join(tmp, 'tpl-dash');
+  cpSync(FIXTURE_TEMPLATES, tpl, { recursive: true });
+  const file = join(tpl, 'vapi', 'assistant.json');
+  const a = JSON.parse(readFileSync(file, 'utf8'));
+  a.model.messages[0].content += ' Keep sentences short — this is a live call.';
+  writeFileSync(file, JSON.stringify(a));
+  const r = dryRun(clientWithKb(), { canonical: CANONICAL, templatesDir: tpl, buildsDir: join(tmp, 'b10'), env: {}, log: quiet });
+  assert.ok(r.warnings.some((w) => /em dash in/.test(w)));
+  assert.equal(r.written.includes('vapi/assistant.json'), true);
 });
