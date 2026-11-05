@@ -21,32 +21,15 @@ Needs Node 20+ and git.
 3. Cloudflare auth: either `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
    in `.env` (token needs Workers Scripts:Edit and Workers KV Storage:Edit),
    or run `npx wrangler login` once.
-4. The canonical Worker: open the `elevate-demo` Worker in the Cloudflare
-   dashboard, copy its code into `templates/worker/index.js`, and wrap its
-   client constants in the markers:
-
-   ```js
-   // @factory:client-config:start
-   const BUSINESS_NAME = '...';
-   const TZ = '...';
-   const OPEN = 540;
-   const CLOSE = 1020;
-   const EVENT_PREFIX = '...';
-   const SERVICES = { ... };
-   const FRONT_DESK = [ ... ];
-   // @factory:client-config:end
-   ```
-
-   Everything between the markers is regenerated per client (it also
-   defines `HOURS_BY_DAY` and `CLOSE_BY_DAY` for per-day hours). If the
-   Worker's SERVICES entries use other field names than `name` /
-   `duration` / `aliases`, set them under `worker.serviceFields` in
-   `canonical.yaml`. Remove any other Elevate mention from the code; the
-   leakage check will refuse the build otherwise. The SMS template stays
-   venue-free (A2P rule).
-5. Fill the ids in `canonical.yaml` (Elevate's assistant id, Worker URL, KB
-   file id) and check its `replace:` list, then pull the canonical
-   assistant and tools:
+4. The canonical Worker is already in `templates/worker/index.js`: the live
+   elevate-demo Worker (version 3090ecac) made client-neutral. Everything
+   between `// @factory:client-config:start` and `:end` (business name,
+   timezone, per-day hours, lead time, consult service, SERVICES, front-desk
+   list) is generated from the client.yaml. `clients/elevate.yaml` reproduces
+   Elevate through it and is a test fixture only; never build it live. When
+   the live Worker changes, update the template first and run `npm test`.
+5. `canonical.yaml` already holds Elevate's assistant id, Worker URL and KB
+   file id. Pull the canonical assistant and tools:
 
    ```bash
    npm run factory -- pull-canonical

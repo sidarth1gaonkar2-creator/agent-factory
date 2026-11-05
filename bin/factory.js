@@ -115,7 +115,7 @@ async function buildCommand(file, values) {
     console.log(r.complete ? 'All checks passed.' : 'Checks passed for what exists; the dry run is INCOMPLETE until the warnings above are fixed.');
     return;
   }
-  requireEnv(['VAPI_API_KEY', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'GCP_KEY_FILE']);
+  requireEnv(['VAPI_API_KEY', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_MESSAGING_SERVICE_SID', 'GCP_KEY_FILE']);
   const state = await build(client, {
     canonical,
     templatesDir,

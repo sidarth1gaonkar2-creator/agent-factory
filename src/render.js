@@ -89,7 +89,7 @@ const MARK_END = '// @factory:client-config:end';
 // canonical.yaml (worker.serviceFields) so they match what the canonical
 // Worker already reads.
 export function workerConfigBlock(client, fields = {}) {
-  const f = { label: 'name', minutes: 'duration', aliases: 'aliases', ...fields };
+  const f = { label: 'label', minutes: 'minutes', aliases: 'aliases', ...fields };
   const services = {};
   for (const [key, svc] of Object.entries(client.services)) {
     services[key] = {
@@ -97,6 +97,9 @@ export function workerConfigBlock(client, fields = {}) {
       [f.minutes]: svc.minutes,
       [f.aliases]: (svc.aliases ?? []).map((a) => String(a).toLowerCase()),
     };
+    for (const flag of ['newPatientOk', 'requiresConsultFirst']) {
+      if (svc[flag] !== undefined) services[key][flag] = svc[flag];
+    }
   }
   const { open, close, byDay } = client.hoursMinutes;
   return [
@@ -105,12 +108,17 @@ export function workerConfigBlock(client, fields = {}) {
     '// change the client.yaml and rebuild.',
     `const BUSINESS_NAME = ${JSON.stringify(client.name)};`,
     `const TZ = ${JSON.stringify(client.timezone)};`,
+    `const SPOKEN_TZ = ${JSON.stringify(client.spokenTimezone)};`,
     `const OPEN = ${open};`,
     `const CLOSE = ${close};`,
     '// Day of week (0 = Sunday) to [open, close] in minutes after midnight, or null when closed.',
     `const HOURS_BY_DAY = ${JSON.stringify(byDay)};`,
     `const CLOSE_BY_DAY = Object.fromEntries(Object.entries(HOURS_BY_DAY).map(([d, h]) => [d, h ? h[1] : null]));`,
     `const EVENT_PREFIX = ${JSON.stringify(client.derived.eventPrefix)};`,
+    '// Minimum notice for a same-day booking, in minutes.',
+    `const LEAD_MINUTES = ${client.leadMinutes ?? 60};`,
+    '// The service new patients are sent to first (null when there is none).',
+    `const CONSULT_KEY = ${JSON.stringify(client.consultService ?? null)};`,
     `const SERVICES = ${JSON.stringify(services, null, 2)};`,
     `const FRONT_DESK = ${JSON.stringify(client.frontDesk)};`,
     MARK_END,

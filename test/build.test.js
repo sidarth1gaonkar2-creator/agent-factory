@@ -95,7 +95,7 @@ test('loadTemplates lists what is missing', () => {
 });
 
 test('forbiddenFor exempts names inside the client name', () => {
-  assert.deepEqual(forbiddenFor(client({ name: 'Lumen Aesthetics' }), CANONICAL), ['Elevate', 'Nashville Skin Society']);
+  assert.deepEqual(forbiddenFor(client({ name: 'Lumen Aesthetics' }), CANONICAL), ['Elevate', 'Nashville Skin Society', 'Toxxology']);
 });
 
 test('renderChecked refuses tokens the client left empty', () => {

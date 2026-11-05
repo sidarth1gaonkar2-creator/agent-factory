@@ -43,9 +43,14 @@ doc; the code enforces them instead of a person.
 
 ## Open items
 
-- One-time setup (README): `.env`, paste the elevate-demo Worker into
-  `templates/worker/index.js` with the markers, fill canonical.yaml ids,
-  `pull-canonical`, hand-tokenize, commit `templates/`.
+- One-time setup (README): fill `.env`, `pull-canonical`, hand-tokenize,
+  commit `templates/vapi/`. canonical.yaml ids and the Worker template are
+  done (template from elevate-demo 3090ecac, verified by SHA-256; parity
+  fixture `clients/elevate.yaml`, behavior tests in `test/worker.test.js`).
+- Live Worker vs standing rules, not changed in the template: the auth check
+  is an exact match after header cleanup (a `.includes` check was proposed),
+  TWILIO_FROM_NUMBER is set but unused, and the SMS names the venue although
+  the A2P samples are venue-free until the Standard/EIN brand upgrade.
 - Not yet exercised against the live APIs. First real run: check how Vapi
   returns the tool secret on read (masked values only warn), the `/chat`
   response shape, and Wrangler's deploy output (URL / version parsing).

@@ -61,9 +61,13 @@ export function normalizeClient(raw, baseDir = '.') {
   if (keys.length < 1 || keys.length > 12) errors.push(`services: ${keys.length} keys; keep it to 1-12 bookable services`);
   const aliasOwner = new Map();
   for (const [key, svc] of Object.entries(services)) {
-    if (!/^[a-z0-9_]+$/.test(key)) errors.push(`services.${key}: keys are lowercase snake_case`);
+    // camelCase is allowed so the canonical Elevate keys can be reproduced.
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) errors.push(`services.${key}: keys are letters, digits and _ (snake_case for new clients)`);
     if (!svc?.label) errors.push(`services.${key}: missing label`);
     if (!Number.isInteger(svc?.minutes) || svc.minutes < 5 || svc.minutes > 480) errors.push(`services.${key}: minutes must be a whole number 5-480`);
+    for (const flag of ['newPatientOk', 'requiresConsultFirst']) {
+      if (svc?.[flag] !== undefined && typeof svc[flag] !== 'boolean') errors.push(`services.${key}.${flag} must be true or false`);
+    }
     for (const alias of svc?.aliases ?? []) {
       const a = String(alias).toLowerCase();
       if (aliasOwner.has(a)) errors.push(`alias "${a}" is on both ${aliasOwner.get(a)} and ${key}; it must route to one service`);
@@ -76,6 +80,9 @@ export function normalizeClient(raw, baseDir = '.') {
     if (span && span[1] - span[0] < longest) errors.push(`hours on ${DAYS[d]} (${span[1] - span[0]} min) are shorter than the longest service (${longest} min)`);
   }
   if (raw.consultService && !services[raw.consultService]) errors.push(`consultService "${raw.consultService}" is not a services key`);
+  if (!raw.consultService && keys.some((k) => services[k]?.requiresConsultFirst)) errors.push('consultService is required when a service has requiresConsultFirst');
+  const leadMinutes = raw.leadMinutes ?? 60;
+  if (!Number.isInteger(leadMinutes) || leadMinutes < 0 || leadMinutes > 1440) errors.push('leadMinutes must be a whole number 0-1440');
 
   const phone = raw.phone ?? { mode: 'buy' };
   if (!['buy', 'existing', 'none'].includes(phone.mode)) errors.push('phone.mode must be buy, existing or none');
@@ -89,6 +96,7 @@ export function normalizeClient(raw, baseDir = '.') {
     areaCode: String(raw.areaCode),
     frontDesk: raw.frontDesk ?? [],
     consultService: raw.consultService ?? null,
+    leadMinutes,
     calendarId: raw.calendarId ?? '',
     phone,
     knowledgeBasePath: resolve(baseDir, raw.knowledgeBase),

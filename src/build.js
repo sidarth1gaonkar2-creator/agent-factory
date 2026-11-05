@@ -229,7 +229,8 @@ export async function build(client, { canonical, templatesDir, buildsDir, env = 
   if (!kb.trim()) throw new Error(`knowledge base ${client.knowledgeBasePath} is missing or empty`);
   const forbidden = forbiddenFor(client, canonical);
 
-  const needEnv = ['VAPI_API_KEY', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'GCP_KEY_FILE'];
+  // The Worker sends SMS through the messaging service, so it is required.
+  const needEnv = ['VAPI_API_KEY', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_MESSAGING_SERVICE_SID', 'GCP_KEY_FILE'];
   const missing = missingEnv(needEnv, env);
   if (missing.length) throw new Error(`set ${missing.join(', ')} in .env first`);
   if (!existsSync(env.GCP_KEY_FILE)) throw new Error('GCP_KEY_FILE does not point to a file');

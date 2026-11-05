@@ -32,6 +32,6 @@ export function client(over = {}, baseDir = ROOT) {
 }
 
 export const CANONICAL = {
-  forbidden: ['Elevate', 'Lumen', 'Nashville Skin Society'],
-  worker: { serviceFields: { label: 'name', minutes: 'duration', aliases: 'aliases' } },
+  forbidden: ['Elevate', 'Lumen', 'Nashville Skin Society', 'Toxxology'],
+  worker: { serviceFields: { label: 'label', minutes: 'minutes', aliases: 'aliases' } },
 };

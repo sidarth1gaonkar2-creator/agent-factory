@@ -1,0 +1,80 @@
+# Parity fixture: reproduces the live elevate-demo Worker (version 3090ecac)
+# through the template. Used by tests only. Do NOT build it live: Elevate
+# already exists, and a build would create a second copy of everything.
+
+name: Elevate Medical Spa
+slug: elevate
+website: https://example.com
+timezone: America/Chicago
+spokenTimezone: Central
+areaCode: 615
+receptionist: Claire
+
+hours:
+  open: "10:00"
+  close: "16:00"
+  days:
+    sat: closed
+    sun: closed
+hoursText: Monday through Friday, 10 AM to 4 PM Central
+# The live Worker only skips start times that have already passed today.
+leadMinutes: 0
+
+services:
+  injectableConsult:
+    label: New Patient Injectable Consultation
+    minutes: 30
+    aliases: [consult, consultation, new patient, first visit, injectable consult]
+    newPatientOk: true
+  botoxDysport:
+    label: Wrinkle Relaxer (Botox/Dysport/Daxxify)
+    minutes: 30
+    aliases: [botox, dysport, daxxify, wrinkle relaxer, tox, neurotoxin, lip flip, gummy smile]
+    requiresConsultFirst: true
+  dermalFiller:
+    label: Dermal Filler
+    minutes: 45
+    aliases: [filler, dermal filler, lip filler, juvederm, restylane, rha, skinvive, liquid rhinoplasty, facial balancing]
+    requiresConsultFirst: true
+  sculptra:
+    label: Sculptra (Face or Body)
+    minutes: 60
+    aliases: [sculptra, biostimulator, sculptra body, sculptra face]
+    requiresConsultFirst: true
+  prfPrp:
+    label: PRF/PRP Treatment
+    minutes: 60
+    aliases: [prf, prp, platelet, hair restoration, prp hair, regenerative]
+    requiresConsultFirst: true
+  helixLaser:
+    label: Helix CO2 Laser Resurfacing
+    minutes: 60
+    aliases: [laser, helix, co2, resurfacing, laser resurfacing]
+    requiresConsultFirst: true
+  microneedling:
+    label: SkinPen Microneedling
+    minutes: 45
+    aliases: [microneedling, skinpen, micro needling, collagen induction]
+    requiresConsultFirst: true
+  hydrafacial:
+    label: HydraFacial
+    minutes: 45
+    aliases: [hydrafacial, hydra facial]
+    newPatientOk: true
+  customFacial:
+    label: Facial (Custom, Dermaplane, or New-Client)
+    minutes: 60
+    aliases: [facial, custom facial, dermaplane, new client facial, the elevate]
+    newPatientOk: true
+  acneConsult:
+    label: Acne Bootcamp New Patient Consult
+    minutes: 60
+    aliases: [acne, acne bootcamp, face reality, acne consult]
+    newPatientOk: true
+consultService: injectableConsult
+frontDesk: [lash and brow services, waxing, chemical peels]
+
+phone:
+  mode: none
+
+knowledgeBase: example-kb.md

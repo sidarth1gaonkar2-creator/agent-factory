@@ -45,9 +45,9 @@ forbidden:
   - Toxxology
 
 worker:
-  # Field names inside each SERVICES entry of the canonical Worker. Match them
-  # to the elevate-demo code when you paste it into templates/worker/index.js.
+  # Field names inside each SERVICES entry of templates/worker/index.js
+  # (elevate-demo uses label / minutes / aliases).
   serviceFields:
-    label: name
-    minutes: duration
+    label: label
+    minutes: minutes
     aliases: aliases
