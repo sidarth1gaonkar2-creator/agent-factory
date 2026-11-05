@@ -6,15 +6,16 @@
 # `npm run factory -- pull-canonical`. When a bug is fixed, fix the canonical
 # first, re-pull, then rebuild clients.
 
-# Vapi assistant id of the Elevate receptionist (Vapi → Assistants → Elevate).
-assistantId: ""
-# Base URL of the elevate-demo Worker, e.g.
-# https://elevate-demo.sidarthgaonkar.workers.dev
-workerUrl: ""
-# Name prefix on Elevate's tools. Elevate predates prefixes, so probably "".
+# Vapi assistant "Elevate Medical Spa — Claire" (read 2026-11-05, v21 published).
+assistantId: 8b605779-a82e-49c4-88ee-f1f5bf9dd8c2
+# Base URL of the elevate-demo Worker, as Elevate's tools call it.
+workerUrl: https://elevate-demo.sidarthgaonkar.workers.dev
+# Elevate's tools are unprefixed (getServices, checkAvailability,
+# bookAppointment, urgentCallback).
 toolPrefix: ""
-# Vapi file id of Elevate's knowledge base, if the assistant references it.
-knowledgeBaseFileId: ""
+# elevate_knowledge_base.txt, the Aug 17 7.13 KB copy the assistant uses.
+# Two files share that name; always go by this id.
+knowledgeBaseFileId: dbe35915-e6b5-49c6-92eb-fc3ab8847b70
 
 # Elevate literals -> template tokens. Longest match wins and word boundaries
 # are respected, so "Elevate" never touches "elevated". After pulling, check
@@ -26,9 +27,9 @@ replace:
   Elevate: CLIENT_NAME
   elevate-demo: WORKER_NAME
   Claire: RECEPTIONIST
-  # Add Elevate's timezone once confirmed, e.g.:
-  # America/Chicago: CLIENT_TZ
-  # Central: SPOKEN_TZ
+  America/Chicago: CLIENT_TZ
+  Central: SPOKEN_TZ
+  # Add once seen in the Worker code:
   # "[ELEVATE DEMO]": EVENT_PREFIX
 
 # Names that must never appear in a client build. A client whose own name
@@ -37,6 +38,7 @@ forbidden:
   - Elevate
   - Lumen
   - Nashville Skin Society
+  - Toxxology
 
 worker:
   # Field names inside each SERVICES entry of the canonical Worker. Match them
