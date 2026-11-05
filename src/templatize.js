@@ -77,15 +77,20 @@ export function templatize({ assistant, tools }, canonical) {
   };
 
   const prefix = canonical.toolPrefix ?? '';
+  const seen = new Set();
   const toolTemplates = tools.map((raw) => {
-    const name = raw.function?.name ?? raw.name;
+    // apiRequest tools keep their real name in `name`; their function.name is
+    // the generic "api_request_tool". Function tools only have function.name.
+    const name = raw.name ?? raw.function?.name;
     if (!name) throw new Error(`canonical tool ${raw.id} has no name`);
     const base = prefix && name.startsWith(prefix) ? name.slice(prefix.length) : name;
     const t = mapStrings(stripReadOnly(raw), swap);
     // Every client gets its own prefixed copy; the flat Vapi tool list is
     // unusable without prefixes.
-    if (t.function?.name) t.function.name = `{{TOOL_PREFIX}}${base}`;
     if (t.name) t.name = `{{TOOL_PREFIX}}${base}`;
+    if (raw.function?.name === name) t.function.name = `{{TOOL_PREFIX}}${base}`;
+    if (seen.has(base)) throw new Error(`two canonical tools are both named ${base}; refusing to overwrite one with the other`);
+    seen.add(base);
     return { file: `${base}.json`, base, canonicalId: raw.id, template: t };
   });
 

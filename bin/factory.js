@@ -21,7 +21,8 @@ const CANONICAL = join(ROOT, 'canonical.yaml');
 
 const USAGE = `usage: factory <command>
 
-  pull-canonical                 export the Elevate assistant + tools from Vapi into templates/
+  pull-canonical [--from-raw]    export the Elevate assistant + tools from Vapi into templates/
+                                 (--from-raw: reuse canonical-raw/, no Vapi call)
   new <slug>                     start clients/<slug>/client.yaml and kb.md from the example
   build <client.yaml> [options]  build the client's receptionist
       --dry-run                  render into builds/<slug>/dry-run/ and check; no API calls
@@ -41,29 +42,35 @@ function requireEnv(names) {
   if (missing.length) throw new Error(`set ${missing.join(', ')} in .env (copy .env.example; never paste them in chat)`);
 }
 
-async function pullCanonical() {
+// --from-raw re-templatizes the last export in canonical-raw/ without calling
+// Vapi (after a canonical.yaml or templatize change).
+async function pullCanonical(fromRaw) {
   const canonical = loadCanonical(CANONICAL);
-  if (!canonical.assistantId) throw new Error('canonical.yaml has no assistantId; fill it in first');
-  requireEnv(['VAPI_API_KEY']);
-  const vapi = vapiClient(process.env.VAPI_API_KEY);
-
-  const assistant = await vapi.getAssistant(canonical.assistantId);
-  const toolIds = assistant.model?.toolIds ?? [];
-  if (!toolIds.length) throw new Error('the canonical assistant has no model.toolIds');
-  const tools = [];
-  for (const id of toolIds) tools.push(await vapi.getTool(id));
-
-  // Raw exports hold the canonical tool secret; canonical-raw/ is gitignored.
   const raw = join(ROOT, 'canonical-raw');
-  write(join(raw, 'assistant.json'), JSON.stringify(assistant, null, 2) + '\n');
-  for (const t of tools) write(join(raw, 'tools', `${t.id}.json`), JSON.stringify(t, null, 2) + '\n');
+  let assistant;
+  let tools;
+  if (fromRaw) {
+    assistant = JSON.parse(readFileSync(join(raw, 'assistant.json'), 'utf8'));
+    tools = (assistant.model?.toolIds ?? []).map((id) => JSON.parse(readFileSync(join(raw, 'tools', `${id}.json`), 'utf8')));
+  } else {
+    if (!canonical.assistantId) throw new Error('canonical.yaml has no assistantId; fill it in first');
+    requireEnv(['VAPI_API_KEY']);
+    const vapi = vapiClient(process.env.VAPI_API_KEY);
+    assistant = await vapi.getAssistant(canonical.assistantId);
+    if (!assistant.model?.toolIds?.length) throw new Error('the canonical assistant has no model.toolIds');
+    tools = [];
+    for (const id of assistant.model.toolIds) tools.push(await vapi.getTool(id));
+    // Raw exports hold the canonical tool secret; canonical-raw/ is gitignored.
+    write(join(raw, 'assistant.json'), JSON.stringify(assistant, null, 2) + '\n');
+    for (const t of tools) write(join(raw, 'tools', `${t.id}.json`), JSON.stringify(t, null, 2) + '\n');
+  }
 
   const out = templatize({ assistant, tools }, canonical);
   const tdir = join(ROOT, 'templates', 'vapi');
   write(join(tdir, 'assistant.json'), JSON.stringify(out.assistant, null, 2) + '\n');
   for (const t of out.tools) write(join(tdir, 'tools', t.file), JSON.stringify(t.template, null, 2) + '\n');
 
-  console.log(`Pulled assistant + ${tools.length} tools into templates/vapi/ (raw copies in canonical-raw/, not committed).`);
+  console.log(`${fromRaw ? 'Re-templatized' : 'Pulled'} assistant + ${tools.length} tools into templates/vapi/ (raw copies in canonical-raw/, not committed).`);
   console.log('Replacements:');
   for (const [from, token] of Object.entries(canonical.replace ?? {})) console.log(`  ${from} -> {{${token}}}: ${out.report.counts[token] ?? 0}`);
   for (const token of ['WORKER_URL', 'KB_FILE_ID']) if (out.report.counts[token]) console.log(`  {{${token}}}: ${out.report.counts[token]}`);
@@ -160,6 +167,7 @@ async function main() {
     allowPositionals: true,
     options: {
       'dry-run': { type: 'boolean', default: false },
+      'from-raw': { type: 'boolean', default: false },
       from: { type: 'string' },
       yes: { type: 'boolean', default: false },
       templates: { type: 'string' },
@@ -168,7 +176,7 @@ async function main() {
   });
   const [command, arg] = positionals;
   if (values.help || !command) return void console.log(USAGE);
-  if (command === 'pull-canonical') return pullCanonical();
+  if (command === 'pull-canonical') return pullCanonical(values['from-raw']);
   if (command === 'new') return newClient(arg);
   if (!arg) throw new Error(`${command} needs a client.yaml path\n\n${USAGE}`);
   if (command === 'build') return buildCommand(arg, values);

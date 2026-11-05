@@ -63,8 +63,9 @@ export function renderChecked(value, tokens, what) {
   return typeof value === 'string' ? renderString(value, tokens) : renderDeep(value, tokens);
 }
 
+// apiRequest tools: `name`; function tools: function.name.
 export function toolName(tool) {
-  return tool.function?.name ?? tool.name;
+  return tool.name ?? tool.function?.name;
 }
 
 export function toolUrl(tool) {

@@ -98,3 +98,16 @@ test('counts replacements and reports leaks the swaps missed', () => {
 test('a tool without a name is an error', () => {
   assert.throws(() => templatize({ assistant, tools: [{ id: 'x' }] }, canonical), /has no name/);
 });
+
+test('apiRequest tools are named by `name`, not the generic function.name', () => {
+  const generic = (name) => ({ ...apiTool, id: name, name, function: { name: 'api_request_tool' }, latestVersion: 3 });
+  const out = templatize({ assistant, tools: [generic('getServices'), generic('bookAppointment')] }, canonical);
+  assert.deepEqual(out.tools.map((t) => t.file), ['getServices.json', 'bookAppointment.json']);
+  assert.equal(out.tools[1].template.name, '{{TOOL_PREFIX}}bookAppointment');
+  assert.equal(out.tools[1].template.function.name, 'api_request_tool');
+  assert.ok(!('latestVersion' in out.tools[0].template));
+});
+
+test('two canonical tools with the same name are refused', () => {
+  assert.throws(() => templatize({ assistant, tools: [apiTool, { ...apiTool, id: 'tool-9' }] }, canonical), /both named getServices/);
+});

@@ -141,7 +141,7 @@ export function renderWorker(template, client, fields) {
 
 // Fields Vapi sets itself. They must be removed before a canonical object is
 // posted as a new one.
-const READ_ONLY = ['id', 'orgId', 'createdAt', 'updatedAt', 'isServerUrlSecretSet'];
+const READ_ONLY = ['id', 'orgId', 'createdAt', 'updatedAt', 'isServerUrlSecretSet', 'latestVersion'];
 
 export function stripReadOnly(obj) {
   const copy = structuredClone(obj);
